@@ -1,6 +1,9 @@
 mod utility;
-use crate::utility::colors::Color;
-use crate::utility::colors::write_color;
+use utility::colors::Color;
+use utility::colors;
+use utility::vec3::{Point3, Vec3};
+use utility::vec3;
+use utility::ray::Ray;
 
 use std::fs::File;
 use std::io::Write;
@@ -11,23 +14,57 @@ fn create_file(path: &str) -> File {
     return fs;
 }
 
-fn main() -> Result<(), std::io::Error> {
+fn ray_color(r: Ray) -> Color {
+    let unit_direction: Vec3 = vec3::unit_vector(r.direction());
+    let a = 0.5*(unit_direction.y + 1.0);
+    return (1.0 - a) * Color::new(1.0,1.0,1.0) + a*Color::new(0.5,0.7,1.0);
+}
 
-    let image_width: i32 = 256;
-    let image_height: i32 = 256;
+fn main() -> std::io::Result<()> {
+
+    //Image
+
+    let aspect_ratio: f64 = 16.0 / 9.0;
+    let image_width: i32 = 400;
+
+    //Calcualte the image height and ensure that it's at least 1
+    let mut image_height: i32 = (image_width as f64/ aspect_ratio) as i32;
+    image_height = if image_height < 1 {1} else {image_height};
+
+    //Camera
+    let focal_length: f64 = 1.0;
+    let viewport_height: f64 = 2.0;
+    let viewport_width: f64 = viewport_height * (image_width/image_height) as f64;
+    let camera_center = Point3::new(0.0,0.0,0.0);
         
+    //Calculate the vectors across the horizontal and down the vertical viewport edges
+    let viewport_u = Vec3::new(viewport_width, 0.0, 0.0);
+    let viewport_v = Vec3::new(0.0, -viewport_height, 0.0);
+
+    //Calculate the horizontal and vertical delat vectors from pixel to pixel
+    let pixel_delta_u = viewport_u / image_width as f64;
+    let pixel_delta_v = viewport_v / image_height as f64;
+
+    //Calculate the location of the upper left pixel
+    let viewport_upper_left = 
+        camera_center - Vec3::new(0.0,0.0,focal_length) - viewport_u/2.0 -viewport_v/2.0;
+    let pixel00_loc = viewport_upper_left + 0.5*(pixel_delta_u + pixel_delta_v);
+
+    // Make file
     let mut output: File = create_file("image.ppm");
     writeln!(output, "P3")?;
     writeln!(output, "{} {}\n255", image_width, image_height)?;
 
-    for j in 0..256 {
+    //Render
+    for j in 0..image_height {
         println!("Scanlines remaining: {}", image_height - j);
-        for i in 0..256 {
-            let r = (i as f64) / ((image_width - 1) as f64);
-            let g = (j as f64) / ((image_height - 1) as f64);
-            let b = 0.0;
-            let pixel_color = Color::new(r,g,b);
-            write_color(&mut output, pixel_color);
+        for i in 0..image_width {
+            let pixel_center =
+                pixel00_loc + (i as f64 * pixel_delta_u) + (j as f64 * pixel_delta_v);
+            let ray_direction = pixel_center - camera_center;
+            let r = Ray::new(camera_center, ray_direction);
+            let pixel_color = ray_color(r);
+            colors::write_color(&mut output, pixel_color);
         }
     }
     println!("Done!");
