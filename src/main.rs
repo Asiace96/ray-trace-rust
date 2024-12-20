@@ -1,9 +1,11 @@
 mod utility;
-use utility::colors::Color;
-use utility::colors;
-use utility::vec3::{Point3, Vec3};
-use utility::vec3;
+use utility::colors::{self,Color};
+use utility::hittable::{HitRecord,Hittable};
+use utility::hittable_list::HittableList;
+use utility::vec3::{self,Point3,Vec3};
 use utility::ray::Ray;
+use utility::sphere::Sphere;
+use utility::common;
 
 use std::fs::File;
 use std::io::Write;
@@ -14,29 +16,11 @@ fn create_file(path: &str) -> File {
     return fs;
 }
 
-fn hit_sphere(center: Point3, radius: f64, r: Ray) -> f64 {
-    let oc  = center - r.origin();
-    //let a = vec3::dot(r.direction(), r.direction());
-    let a = r.direction().length_squared();
-    //let b = -2.0 * vec3::dot(r.direction(), oc);
-    let h = vec3::dot(r.direction(), oc);
-    //let c = vec3::dot(oc,oc) - radius*radius;
-    let c = oc.length_squared() - radius*radius;
-    //let discriminant = b*b -4.0*a*c;
-    let discriminant = h*h - a*c;
-    if discriminant < 0.0 {
-        return -1.0;
-    } else {
-        return (h - discriminant.sqrt()) / a;
-    }
-}
 
-
-fn ray_color(r: Ray) -> Color {
-    let t = hit_sphere(Point3::new(0.0,0.0,-1.0), 0.5, r);
-    if t > 0.0 {
-        let n = vec3::unit_vector(r.at(t) - Vec3::new(0.0,0.0,-1.0));
-        return 0.5*Color::new(n.x+1.0, n.y+1.0, n.z+1.0);
+fn ray_color(r: &Ray, world: &dyn Hittable) -> Color {
+    let mut rec = HitRecord::new();
+    if world.hit(r, 0.0, common::INFINITY, &mut rec) {
+        return 0.5 * (rec.normal + Color::new(1.0,1.0,1.0));
     }
 
     let unit_direction: Vec3 = vec3::unit_vector(r.direction());
@@ -54,6 +38,11 @@ fn main() -> std::io::Result<()> {
     //Calcualte the image height and ensure that it's at least 1
     let mut image_height: i32 = (image_width as f64/ aspect_ratio) as i32;
     image_height = if image_height < 1 {1} else {image_height};
+
+    //World
+    let mut world = HittableList::new();
+    world.add(Box::new(Sphere::new(Point3::new(0.0,0.0,-1.0), 0.5)));
+    world.add(Box::new(Sphere::new(Point3::new(0.0,-30.5,1.0), 30.0)));
 
     //Camera
     let focal_length: f64 = 1.0;
@@ -87,7 +76,7 @@ fn main() -> std::io::Result<()> {
                 pixel00_loc + (i as f64 * pixel_delta_u) + (j as f64 * pixel_delta_v);
             let ray_direction = pixel_center - camera_center;
             let r = Ray::new(camera_center, ray_direction);
-            let pixel_color = ray_color(r);
+            let pixel_color = ray_color(&r, &world);
             colors::write_color(&mut output, pixel_color);
         }
     }

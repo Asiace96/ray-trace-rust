@@ -1,5 +1,3 @@
-use std::mem::discriminant;
-
 use crate::utility::hittable::{HitRecord, Hittable};
 use crate::utility::ray::Ray;
 use crate::utility::vec3::{self,Point3, Vec3};
@@ -19,6 +17,7 @@ impl Sphere {
         }
     }
 }
+
 
 impl Hittable for Sphere {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
@@ -45,7 +44,8 @@ impl Hittable for Sphere {
 
         rec.t = root;
         rec.p = r.at(rec.t);
-        rec.normal = (rec.p - self.center) / self.radius;
+        let outward_normal = (rec.p - self.center) / self.radius;
+        rec.set_face_normal(r, outward_normal);
 
         return true;
     }
