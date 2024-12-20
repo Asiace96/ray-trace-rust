@@ -14,7 +14,31 @@ fn create_file(path: &str) -> File {
     return fs;
 }
 
+fn hit_sphere(center: Point3, radius: f64, r: Ray) -> f64 {
+    let oc  = center - r.origin();
+    //let a = vec3::dot(r.direction(), r.direction());
+    let a = r.direction().length_squared();
+    //let b = -2.0 * vec3::dot(r.direction(), oc);
+    let h = vec3::dot(r.direction(), oc);
+    //let c = vec3::dot(oc,oc) - radius*radius;
+    let c = oc.length_squared() - radius*radius;
+    //let discriminant = b*b -4.0*a*c;
+    let discriminant = h*h - a*c;
+    if discriminant < 0.0 {
+        return -1.0;
+    } else {
+        return (h - discriminant.sqrt()) / a;
+    }
+}
+
+
 fn ray_color(r: Ray) -> Color {
+    let t = hit_sphere(Point3::new(0.0,0.0,-1.0), 0.5, r);
+    if t > 0.0 {
+        let n = vec3::unit_vector(r.at(t) - Vec3::new(0.0,0.0,-1.0));
+        return 0.5*Color::new(n.x+1.0, n.y+1.0, n.z+1.0);
+    }
+
     let unit_direction: Vec3 = vec3::unit_vector(r.direction());
     let a = 0.5*(unit_direction.y + 1.0);
     return (1.0 - a) * Color::new(1.0,1.0,1.0) + a*Color::new(0.5,0.7,1.0);
@@ -34,7 +58,7 @@ fn main() -> std::io::Result<()> {
     //Camera
     let focal_length: f64 = 1.0;
     let viewport_height: f64 = 2.0;
-    let viewport_width: f64 = viewport_height * (image_width/image_height) as f64;
+    let viewport_width: f64 = viewport_height * aspect_ratio;
     let camera_center = Point3::new(0.0,0.0,0.0);
         
     //Calculate the vectors across the horizontal and down the vertical viewport edges

@@ -33,7 +33,7 @@ impl Vec3 {
   }
 
   pub fn length(&self) -> f64 {
-      return f64::sqrt(self.length_squared());
+      return self.length_squared().sqrt();
   }
 
 //   pub fn x(self) -> f32 {
