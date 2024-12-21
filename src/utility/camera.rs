@@ -60,7 +60,7 @@ impl Camera {
         let viewport_u = Vec3::new(viewport_width, 0.0, 0.0);
         let viewport_v = Vec3::new(0.0, -viewport_height, 0.0);
 
-        //Calculate the horizontal and vertical delat vectors from pixel to pixel
+        //Calculate the horizontal and vertical delta vectors from pixel to pixel
         self.pixel_delta_u = viewport_u / self.image_width as f64;
         self.pixel_delta_v = viewport_v / self.image_height as f64;
 
