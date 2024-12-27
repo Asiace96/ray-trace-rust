@@ -13,6 +13,7 @@ pub struct Camera {
     pub image_width: i32, // Rendered image width in pixel count
     pub image_height: i32, // Rendred image height 
     pub samples_per_pixel: i32, // Count of random samples for each pixel
+    pub max_depth: i32, // Maximum number of ray bounces into scene 
         pixel_sample_scale: f64, // Color scale factor for a sum of pixel sample 
         center: Point3, // Camera center 
         pixel00_loc: Point3, // Location of pixel 0, 0
@@ -36,7 +37,7 @@ impl Camera {
                 let mut pixel_color = Color::new(0.0,0.0,0.0);
                 for _ in 0..self.samples_per_pixel {
                     let r = self.get_ray(i, j);
-                    pixel_color += Self::ray_color(&r, world);
+                    pixel_color += Self::ray_color(&r, self.max_depth, world);
                 }
                 colors::write_color(output, self.pixel_sample_scale * pixel_color);
             }
@@ -47,12 +48,14 @@ impl Camera {
         //Image
         self.aspect_ratio = 16.0 / 9.0;
         self.image_width = 1200;
-        self.samples_per_pixel = 100;
 
         //Calcualte the image height and ensure that it's at least 1
         self.image_height = (self.image_width as f64/ self.aspect_ratio) as i32;
         self.image_height = if self.image_height < 1 {1} else {self.image_height};
 
+        //Render
+        self.samples_per_pixel = 100;
+        self.max_depth = 50;
         self.pixel_sample_scale = 1.0 / self.samples_per_pixel as f64;
 
         //Camera
@@ -97,10 +100,16 @@ impl Camera {
         return Vec3::new(common::random_double() - 0.5, common::random_double() - 0.5, 0.0);
     }
 
-    fn ray_color(r: &Ray, world: &dyn Hittable) -> Color {
+    fn ray_color(r: &Ray, depth: i32,  world: &dyn Hittable) -> Color {
+        // If we've exceeded the ray bounce limit, no more light is gathered
+        if depth < 0 {
+            return Color::from_float(0.0);
+        }
+
         let mut rec = HitRecord::new();
         if world.hit(r, Interval::new(0.0, common::INFINITY), &mut rec) {
-            return 0.5 * (rec.normal + Color::new(1.0,1.0,1.0));
+            let direction = vec3::random_on_hemisphere(&rec.normal);
+            return 0.5 * Self::ray_color(&Ray::new(rec.p, direction), depth-1, world);
         }
 
         let unit_direction: Vec3 = vec3::unit_vector(r.direction());

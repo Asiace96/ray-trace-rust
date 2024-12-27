@@ -1,5 +1,6 @@
 use std::ops::{Add, AddAssign, Neg, Sub, Mul, MulAssign, Div, DivAssign};
 use std::fmt::{Display, Formatter, Result};
+use crate::utility::common;
 
 #[derive(Default, Debug, Copy, Clone)]
 pub struct Vec3 {
@@ -34,6 +35,22 @@ impl Vec3 {
 
   pub fn length(&self) -> f64 {
       return self.length_squared().sqrt();
+  }
+
+  pub fn random() -> Self {
+      Vec3 {
+        x: common::random_double(),
+        y: common::random_double(), 
+        z: common::random_double()
+      }
+  }
+
+  pub fn random_range(min: f64, max: f64) -> Self {
+      Vec3 {
+        x: common::random_double_range(min, max),
+        y: common::random_double_range(min, max),
+        z: common::random_double_range(min, max)
+      }
   }
 
 //   pub fn x(self) -> f32 {
@@ -147,3 +164,22 @@ pub fn cross(u: Vec3, v: Vec3) -> Vec3 {
 pub fn unit_vector(u: Vec3) -> Vec3 {
     return u / u.length();
 }
+
+pub fn random_unit_vector() -> Vec3 {
+    // Return a random vector inside the unit sphere
+    loop {
+        let p = Vec3::random_range(-1.0,1.0);
+        if f64::MIN_POSITIVE <= p.length_squared() && p.length_squared() <= 1.0 {
+            return unit_vector(p);
+        }
+    }
+}
+
+pub fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
+    let on_unit_sphere = random_unit_vector();
+    match dot(on_unit_sphere, *normal) > 0.0 { // In the same direction as the normal
+        true => on_unit_sphere,
+        false => -on_unit_sphere
+    }
+}
+
