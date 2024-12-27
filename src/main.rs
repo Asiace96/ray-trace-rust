@@ -22,7 +22,7 @@ fn main() -> std::io::Result<()> {
     //World
     let mut world = HittableList::new();
     world.add(Box::new(Sphere::new(Point3::new(0.0,0.0,-1.0), 0.5)));
-    world.add(Box::new(Sphere::new(Point3::new(0.0,-30.5,1.0), 30.0)));
+    world.add(Box::new(Sphere::new(Point3::new(0.0,-80.5,1.0), 80.0)));
     
     //Camera
     let mut camera = Camera::new();
