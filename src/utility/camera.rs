@@ -3,6 +3,7 @@ use crate::utility::vec3::{self,Vec3, Point3};
 use crate::utility::colors::{self,Color};
 use crate::utility::interval::Interval;
 use crate::utility::hittable::{HitRecord,Hittable};
+use crate::utility::material;
 use crate::utility::common;
 use std::fs::File;
 
@@ -107,8 +108,16 @@ impl Camera {
 
         let mut rec = HitRecord::new();
         if world.hit(r, Interval::new(0.001, common::INFINITY), &mut rec) {
-            let direction = rec.normal + vec3::random_on_hemisphere(&rec.normal);
-            return 0.5 * Self::ray_color(&Ray::new(rec.p, direction), depth-1, world);
+            let mut scattered = Ray::default();
+            let mut attenuation = Color::default();
+            if rec
+                .mat
+                .as_ref()
+                .unwrap()
+                .scatter(r, &rec, &mut attenuation, &mut scattered)  {
+                return attenuation * Self::ray_color(&scattered, depth-1, world);
+            }
+            return Color::new(0.0,0.0,0.0);
         }
 
         let unit_direction: Vec3 = vec3::unit_vector(r.direction());

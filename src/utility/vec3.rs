@@ -37,6 +37,13 @@ impl Vec3 {
       return self.length_squared().sqrt();
   }
 
+  pub fn near_zero(&self) -> bool {
+      // Return true if the vector is close to zero in all dimentions
+      let s = 1.0e-8;
+      return self.x.abs() < s && self.y.abs() < s && self.z.abs() < s;
+  }
+
+
   pub fn random() -> Self {
       Vec3 {
         x: common::random_double(),
@@ -181,5 +188,9 @@ pub fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
         true => on_unit_sphere,
         false => -on_unit_sphere
     }
+}
+
+pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+    return v - 2.0*dot(v,n)*n;
 }
 

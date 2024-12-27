@@ -8,9 +8,11 @@ use utility::interval::Interval;
 use utility::sphere::Sphere;
 use utility::common;
 use utility::camera::Camera;
+use utility::material::{Metal, Lambertian};
 
 use std::fs::File;
 use std::io::Write;
+use std::rc::Rc;
 
 fn create_file(path: &str) -> File {
     let fs = File::create(path)
@@ -21,9 +23,36 @@ fn create_file(path: &str) -> File {
 fn main() -> std::io::Result<()> {
     //World
     let mut world = HittableList::new();
-    world.add(Box::new(Sphere::new(Point3::new(0.0,0.0,-1.0), 0.5)));
-    world.add(Box::new(Sphere::new(Point3::new(0.0,-80.5,1.0), 80.0)));
+    let material_ground = Rc::new(Lambertian::new(Color::new(0.8,0.8,0.0)));
+    let material_center = Rc::new(Lambertian::new(Color::new(0.1,0.2,0.5)));
+    let material_left   = Rc::new(Metal::new(Color::new(0.8,0.8,0.8)));
+    let material_right  = Rc::new(Metal::new(Color::new(0.8,0.6,0.2)));
+
+
+    world.add(Box::new(Sphere::new(
+                       Point3::new(0.0, -100.5, -1.0),
+                       100.0,
+                       material_ground,
+    )));
+
+    world.add(Box::new(Sphere::new(
+                       Point3::new(0.0, 0.0, -1.0),
+                       0.5,
+                       material_center,
+    )));
     
+    world.add(Box::new(Sphere::new(
+                       Point3::new(-1.0, 0.0, -1.0),
+                       0.5,
+                       material_left,
+    )));
+
+    world.add(Box::new(Sphere::new(
+                       Point3::new(1.0, 0.0, -1.0),
+                       0.5,
+                       material_right,
+    )));
+
     //Camera
     let mut camera = Camera::new();
     camera.initialize();
