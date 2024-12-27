@@ -7,3 +7,4 @@ pub mod hittable_list;
 pub mod common;
 pub mod interval;
 pub mod camera;
+pub mod material;

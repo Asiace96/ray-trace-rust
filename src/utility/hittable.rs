@@ -1,3 +1,6 @@
+use std::rc::Rc;
+
+use crate::utility::material::Material;
 use crate::utility::ray::Ray;
 use crate::utility::vec3::{self,Vec3, Point3};
 use crate::utility::interval::Interval;
@@ -6,6 +9,7 @@ use crate::utility::interval::Interval;
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
+    pub mat: Option<Rc<dyn Material>>,
     pub t: f64,
     pub front_face: bool
 }
