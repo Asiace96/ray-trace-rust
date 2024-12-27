@@ -49,7 +49,6 @@ impl Camera {
         self.aspect_ratio = 16.0 / 9.0;
         self.image_width = 1200;
 
-        //Calcualte the image height and ensure that it's at least 1
         self.image_height = (self.image_width as f64/ self.aspect_ratio) as i32;
         self.image_height = if self.image_height < 1 {1} else {self.image_height};
 
@@ -107,7 +106,7 @@ impl Camera {
         }
 
         let mut rec = HitRecord::new();
-        if world.hit(r, Interval::new(0.0, common::INFINITY), &mut rec) {
+        if world.hit(r, Interval::new(0.001, common::INFINITY), &mut rec) {
             let direction = vec3::random_on_hemisphere(&rec.normal);
             return 0.5 * Self::ray_color(&Ray::new(rec.p, direction), depth-1, world);
         }
