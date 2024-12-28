@@ -30,13 +30,15 @@ fn main() -> std::io::Result<()> {
     let LOOK_FROM = Point3::new(0.0,0.0,0.0);
     let LOOK_AT = Point3::new(0.0,0.0,-1.0);
     let VUP = Vec3::new(0.0,1.0,0.0);
+    const DEFOCUS_ANGLE: f64 = 0.0;
+    const FOCUS_DIST: f64 = 10.0;
 
 
     //World
     let mut world = HittableList::new();
     let material_ground = Rc::new(Lambertian::new(Color::new(0.8,0.8,0.0)));
     let material_center = Rc::new(Lambertian::new(Color::new(0.1,0.2,0.5)));
-    let material_left   = Rc::new(Dielectric::new(1.5));
+    let material_left   = Rc::new(Dielectric::new(1.50));
     let material_bubble = Rc::new(Dielectric::new(1.00 / 1.50));
     let material_right  = Rc::new(Metal::new(Color::new(0.8,0.6,0.2), 0.0));
 
@@ -78,11 +80,14 @@ fn main() -> std::io::Result<()> {
     camera.samples_per_pixel = SAMPLES_PER_PIXEL;
     camera.max_depth = MAX_DEPTH;
 
-    camera.vfov = VERTICAL_FIELD_OF_VIEW;
-    camera.look_from = Point3::new(-2.0, 2.0, 1.0); // default - LOOK_FROM;
-    camera.look_at = Point3::new(0.0, 0.0, -1.0); // default - LOOK_AT;
-    camera.vup = Vec3::new(0.0, 1.0, 0.0); //default - VUP;
+    camera.vfov = 20.0; // VERTICAL_FIELD_OF_VIEW
+    camera.look_from = Point3::new(-2.0, 2.0, 1.0); // LOOK_FROM;
+    camera.look_at = Point3::new(0.0, 0.0, -1.0); // LOOK_AT;
+    camera.vup = Vec3::new(0.0, 1.0, 0.0); // VUP;
 
+    //using a large aperture 
+    camera.defocus_angle = 10.0; // DEFOCUS_ANGLE
+    camera.focus_dist = 3.4; // FOCUS_DIST
     camera.initialize();
 
     // Make file
