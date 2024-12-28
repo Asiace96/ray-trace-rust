@@ -21,6 +21,17 @@ fn create_file(path: &str) -> File {
 }
 
 fn main() -> std::io::Result<()> {
+    // Constants
+    const ASPECT_RATIO: f64 = 16.0 / 9.0;
+    const IMAGE_WIDTH: i32 = 1200;
+    const SAMPLES_PER_PIXEL: i32 = 100;
+    const MAX_DEPTH: i32 = 50;
+    const VERTICAL_FIELD_OF_VIEW: f64 = 90.0;
+    let LOOK_FROM = Point3::new(0.0,0.0,0.0);
+    let LOOK_AT = Point3::new(0.0,0.0,-1.0);
+    let VUP = Vec3::new(0.0,1.0,0.0);
+
+
     //World
     let mut world = HittableList::new();
     let material_ground = Rc::new(Lambertian::new(Color::new(0.8,0.8,0.0)));
@@ -62,6 +73,16 @@ fn main() -> std::io::Result<()> {
 
     //Camera
     let mut camera = Camera::new();
+    camera.image_width = IMAGE_WIDTH;
+    camera.aspect_ratio = ASPECT_RATIO;
+    camera.samples_per_pixel = SAMPLES_PER_PIXEL;
+    camera.max_depth = MAX_DEPTH;
+
+    camera.vfov = VERTICAL_FIELD_OF_VIEW;
+    camera.look_from = Point3::new(-2.0, 2.0, 1.0); // default - LOOK_FROM;
+    camera.look_at = Point3::new(0.0, 0.0, -1.0); // default - LOOK_AT;
+    camera.vup = Vec3::new(0.0, 1.0, 0.0); //default - VUP;
+
     camera.initialize();
 
     // Make file
