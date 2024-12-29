@@ -2,8 +2,7 @@ use crate::utility::ray::Ray;
 use crate::utility::vec3::{self,Vec3, Point3};
 use crate::utility::colors::{self,Color};
 use crate::utility::interval::Interval;
-use crate::utility::hittable::{HitRecord,Hittable};
-use crate::utility::material;
+use crate::utility::hittable::Hittable;
 use crate::utility::common;
 use std::fs::File;
 
@@ -52,6 +51,7 @@ impl Camera {
                 colors::write_color(output, self.pixel_sample_scale * pixel_color);
             }
         }
+        println!("Done!");
     }
 
     pub fn initialize(&mut self) {
@@ -125,16 +125,9 @@ impl Camera {
             return Color::from_float(0.0);
         }
 
-        let mut rec = HitRecord::new();
-        if world.hit(r, Interval::new(0.001, common::INFINITY), &mut rec) {
-            let mut scattered = Ray::default();
-            let mut attenuation = Color::default();
-            if rec
-                .mat
-                .as_ref()
-                .unwrap()
-                .scatter(r, &rec, &mut attenuation, &mut scattered)  {
-                return attenuation * Self::ray_color(&scattered, depth-1, world);
+        if let Some(hit_rec) = world.hit(r, Interval::new(0.001, common::INFINITY)) {
+           if let Some(scatter_rec) = hit_rec.mat.scatter(r, &hit_rec) {
+               return scatter_rec.attenuation * Self::ray_color(&scatter_rec.scattered, depth-1, world);
             }
             return Color::new(0.0,0.0,0.0);
         }

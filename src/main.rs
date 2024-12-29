@@ -1,11 +1,8 @@
 mod utility;
-use utility::colors::{self,Color};
-use utility::hittable::{HitRecord,Hittable};
+use utility::colors::Color;
 use utility::hittable_list::HittableList;
-use utility::vec3::{self,Point3,Vec3};
-use utility::ray::Ray;
-use utility::interval::Interval;
-use utility::sphere::{self, Sphere};
+use utility::vec3::{Point3,Vec3};
+use utility::sphere::Sphere;
 use utility::common;
 use utility::camera::Camera;
 use utility::material::{Dielectric, Lambertian, Metal};
@@ -104,16 +101,17 @@ fn main() -> std::io::Result<()> {
 
     camera.defocus_angle = 0.6; // DEFOCUS_ANGLE
     camera.focus_dist = FOCUS_DIST;
+
     camera.initialize();
 
     // Make file
     let mut output: File = create_file("image.ppm");
+    // Image is in .ppm format, first 2 lines are the header
     writeln!(output, "P3")?;
     writeln!(output, "{} {}\n255", camera.image_width, camera.image_height)?;
 
     camera.render(&mut world, &mut output); 
 
-    println!("Done!");
     Ok(())
 }
 
