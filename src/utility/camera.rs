@@ -6,6 +6,8 @@ use crate::utility::hittable::Hittable;
 use crate::utility::common;
 use std::fs::File;
 
+use rayon::prelude::*;
+
 
 #[derive(Default)]
 pub struct Camera {
@@ -42,12 +44,18 @@ impl Camera {
         //Render
         for j in 0..self.image_height {
             println!("Scanlines remaining: {}", self.image_height - j);
-            for i in 0..self.image_width {
-                let mut pixel_color = Color::new(0.0,0.0,0.0);
-                for _ in 0..self.samples_per_pixel {
-                    let r = self.get_ray(i, j);
-                    pixel_color += Self::ray_color(&r, self.max_depth, world);
-                }
+            let pixel_colors: Vec<_> = (0..self.image_width)
+                .into_par_iter()
+                .map(|i| {
+                    let mut pixel_color = Color::new(0.0,0.0,0.0);
+                    for _ in 0..self.samples_per_pixel {
+                        let r = self.get_ray(i,j);
+                        pixel_color += Self::ray_color(&r, self.max_depth, world);
+                    }
+                    pixel_color
+                })
+            .collect();
+            for pixel_color in pixel_colors {
                 colors::write_color(output, self.pixel_sample_scale * pixel_color);
             }
         }
